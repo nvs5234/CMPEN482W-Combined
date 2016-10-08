@@ -4,7 +4,7 @@
 
 #pragma once
 
-#define THRESHOLD 7
+#define THRESHOLD 10
 #define INC_AMT 20
 
 
@@ -283,22 +283,33 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		POINT lpPoint;
 		GetCursorPos(&lpPoint);
 
-		if (angles.pitch < -THRESHOLD || angles.pitch > THRESHOLD) {
-			if (angles.pitch < -THRESHOLD) {							// negative pitch is down wrt to looking at the screen
-				SetCursorPos(lpPoint.x, lpPoint.y + INC_AMT);
+		int incX = angles.yaw, incY = angles.pitch;
+		if (abs(incX) > THRESHOLD || abs(incY) > THRESHOLD) {
+			if (abs(incX) < THRESHOLD) {
+				incX = 0;
 			}
 			else {
-				SetCursorPos(lpPoint.x, lpPoint.y - INC_AMT);
+				if (incX <= 0) {
+					incX += THRESHOLD / 2;
+				}
+				else {
+					incX -= THRESHOLD / 2;
+				}
 			}
-		}
-		else if (angles.yaw < -THRESHOLD || angles.yaw > THRESHOLD) {
-			if (angles.yaw > THRESHOLD) {								// negative yaw is right wrt to looking at the screen
-				SetCursorPos(lpPoint.x + INC_AMT, lpPoint.y);
+			if (abs(incY) < THRESHOLD) {
+				incY = 0;
 			}
 			else {
-				SetCursorPos(lpPoint.x - INC_AMT, lpPoint.y);
+				if (incY <= 0) {
+					incY += THRESHOLD / 2;
+				}
+				else {
+					incY -= THRESHOLD / 2;
+				}
 			}
+			SetCursorPos(lpPoint.x + incX, lpPoint.y - incY);
 		}
+
 
 	} else {
 		SetTextColor(dc2, RGB(255, 0, 0));	
