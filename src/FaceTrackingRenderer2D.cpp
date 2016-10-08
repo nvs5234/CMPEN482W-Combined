@@ -2,6 +2,11 @@
 #include "FaceTrackingUtilities.h"
 #include "pxccapture.h"
 
+#pragma once
+
+#define THRESHOLD 7
+#define INC_AMT 20
+
 
 extern volatile bool need_calibration;
 
@@ -267,11 +272,33 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		TextOut(dc2, xStartingPosition, yPosition, tempLine, std::char_traits<wchar_t>::length(tempLine));
 
 		yPosition += rowMargin;
-	swprintf_s<sizeof(tempLine) / sizeof(WCHAR) >(tempLine, L"VertANgle : %llf ", eye_point_angle_vertical);
-	TextOut(dc2, xStartingPosition, yPosition, tempLine, std::char_traits<wchar_t>::length(tempLine));
-	yPosition += rowMargin;
-	swprintf_s<sizeof(tempLine) / sizeof(WCHAR) >(tempLine, L"HoriAngle: %llf", eye_point_angle_horizontal);
-	TextOut(dc2, xStartingPosition, yPosition, tempLine, std::char_traits<wchar_t>::length(tempLine));
+		swprintf_s<sizeof(tempLine) / sizeof(WCHAR) >(tempLine, L"VertANgle : %llf ", eye_point_angle_vertical);
+		TextOut(dc2, xStartingPosition, yPosition, tempLine, std::char_traits<wchar_t>::length(tempLine));
+		
+		yPosition += rowMargin;
+		swprintf_s<sizeof(tempLine) / sizeof(WCHAR) >(tempLine, L"HoriAngle: %llf", eye_point_angle_horizontal);
+		TextOut(dc2, xStartingPosition, yPosition, tempLine, std::char_traits<wchar_t>::length(tempLine));
+
+		//Move Cursor
+		POINT lpPoint;
+		GetCursorPos(&lpPoint);
+
+		if (angles.pitch < -THRESHOLD || angles.pitch > THRESHOLD) {
+			if (angles.pitch < -THRESHOLD) {							// negative pitch is down wrt to looking at the screen
+				SetCursorPos(lpPoint.x, lpPoint.y + INC_AMT);
+			}
+			else {
+				SetCursorPos(lpPoint.x, lpPoint.y - INC_AMT);
+			}
+		}
+		else if (angles.yaw < -THRESHOLD || angles.yaw > THRESHOLD) {
+			if (angles.yaw > THRESHOLD) {								// negative yaw is right wrt to looking at the screen
+				SetCursorPos(lpPoint.x + INC_AMT, lpPoint.y);
+			}
+			else {
+				SetCursorPos(lpPoint.x - INC_AMT, lpPoint.y);
+			}
+		}
 
 	} else {
 		SetTextColor(dc2, RGB(255, 0, 0));	
