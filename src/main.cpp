@@ -1280,6 +1280,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int) {
 	ghInstance = hInstance;
 
 	session = PXCSession::CreateInstance();
+
 	if (session == NULL) 
 	{
         MessageBoxW(0, L"Failed to create an SDK session", L"Face Viewer", MB_ICONEXCLAMATION | MB_OK);

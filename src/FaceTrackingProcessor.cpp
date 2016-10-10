@@ -95,6 +95,7 @@ void FaceTrackingProcessor::Process(HWND dialogWindow) {
 	// set startup mode
 
 	PXCSenseManager* senseManager = session->CreateSenseManager();
+	senseManager->EnableStream(PXCCapture::STREAM_TYPE_COLOR, 1280, 720);
 
 	if (senseManager == NULL) {
 
