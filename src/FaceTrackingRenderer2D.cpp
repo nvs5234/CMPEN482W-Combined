@@ -290,10 +290,10 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 			}
 			else {
 				if (incX <= 0) {
-					incX += THRESHOLD / 2;
+					incX += THRESHOLD;
 				}
 				else {
-					incX -= THRESHOLD / 2;
+					incX -= THRESHOLD;
 				}
 			}
 			if (abs(incY) < THRESHOLD) {
@@ -301,10 +301,10 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 			}
 			else {
 				if (incY <= 0) {
-					incY += THRESHOLD / 2;
+					incY += THRESHOLD;
 				}
 				else {
-					incY -= THRESHOLD / 2;
+					incY -= THRESHOLD;
 				}
 			}
 			SetCursorPos(lpPoint.x + incX, lpPoint.y - incY);
