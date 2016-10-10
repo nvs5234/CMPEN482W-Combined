@@ -312,9 +312,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 
 
 		// Expose pupil position
-		ExposePupil(trackedFace);
-
-
+		POINT pupilPt = ExposePupil(trackedFace);
 
 	} else {
 		SetTextColor(dc2, RGB(255, 0, 0));	
@@ -337,30 +335,35 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 
 }
 
-void FaceTrackingRenderer2D::ExposePupil(PXCFaceData::Face* trackedFace) {
+POINT FaceTrackingRenderer2D::ExposePupil(PXCFaceData::Face* trackedFace) {
+	POINT landmark = POINT();
+
 	const PXCFaceData::LandmarksData* landmarkData = trackedFace->QueryLandmarks();
 	if (landmarkData == NULL) {
-		return;
+		return landmark;
 	}
 
 	pxcI32 numPoints = landmarkData->QueryNumPoints();
 
 	landmarkData->QueryPoints(m_landmarkPoints);
+	
+	int x, y;
 	for (int i = 0; i < numPoints; ++i)
 	{
-		int x = (int)m_landmarkPoints[i].image.x + LANDMARK_ALIGNMENT;
-		int y = (int)m_landmarkPoints[i].image.y + LANDMARK_ALIGNMENT;
-		if (m_landmarkPoints[i].confidenceImage)
+		// ISSUE: This if statement is never true, because every landmark's source alias is always LANDMARK_NOT_NAMED
+		if (m_landmarkPoints[i].source.alias == PXCFaceData::LandmarkType::LANDMARK_EYE_RIGHT_CENTER)
 		{
-			//SetTextColor(dc2, RGB(255, 255, 255));
-			//TextOut(dc2, x, y, L"•", 1);
-		}
-		else
-		{
-			//SetTextColor(dc2, RGB(255, 0, 0));
-			//TextOut(dc2, x, y, L"x", 1);
+			x = (int)m_landmarkPoints[i].image.x + LANDMARK_ALIGNMENT;
+			y = (int)m_landmarkPoints[i].image.y + LANDMARK_ALIGNMENT;
+
+			landmark.x = x;
+			landmark.y = y;
+
+			break;
 		}
 	}
+
+	return landmark;
 
 }
 
