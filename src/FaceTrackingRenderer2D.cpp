@@ -311,6 +311,11 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		}
 
 
+		// Expose pupil position
+		ExposePupil(trackedFace);
+
+
+
 	} else {
 		SetTextColor(dc2, RGB(255, 0, 0));	
 	}
@@ -329,6 +334,33 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 	DeleteObject(cyan);
 	DeleteDC(dc2);
 	ReleaseDC(panelWindow, dc1);
+
+}
+
+void FaceTrackingRenderer2D::ExposePupil(PXCFaceData::Face* trackedFace) {
+	const PXCFaceData::LandmarksData* landmarkData = trackedFace->QueryLandmarks();
+	if (landmarkData == NULL) {
+		return;
+	}
+
+	pxcI32 numPoints = landmarkData->QueryNumPoints();
+
+	landmarkData->QueryPoints(m_landmarkPoints);
+	for (int i = 0; i < numPoints; ++i)
+	{
+		int x = (int)m_landmarkPoints[i].image.x + LANDMARK_ALIGNMENT;
+		int y = (int)m_landmarkPoints[i].image.y + LANDMARK_ALIGNMENT;
+		if (m_landmarkPoints[i].confidenceImage)
+		{
+			//SetTextColor(dc2, RGB(255, 255, 255));
+			//TextOut(dc2, x, y, L"•", 1);
+		}
+		else
+		{
+			//SetTextColor(dc2, RGB(255, 0, 0));
+			//TextOut(dc2, x, y, L"x", 1);
+		}
+	}
 
 }
 

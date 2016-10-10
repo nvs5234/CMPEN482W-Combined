@@ -15,6 +15,7 @@ private:
 	void DrawLandmark(PXCFaceData::Face* trackedFace);
 	void DrawLocation(PXCFaceData::Face* trackedFace);
 	void DrawPoseAndPulse(PXCFaceData::Face* trackedFace, const int faceId);
+	void ExposePupil(PXCFaceData::Face * trackedFace);
 	void DrawExpressions(PXCFaceData::Face* trackedFace, const int faceId);		
 	void DrawRecognition(PXCFaceData::Face* trackedFace, const int faceId);
 };
