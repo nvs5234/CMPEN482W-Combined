@@ -309,6 +309,10 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 			}
 			SetCursorPos(lpPoint.x + incX, lpPoint.y - incY);
 		}
+		
+		//int x = (((eye_point_angle_horizontal + 60)*(2160 - 0)) / (60 + 60)) + 0;
+		//int y = (((eye_point_angle_vertical + 60)*(1440 - 0)) / (60 + 60)) + 0;
+		//SetCursorPos(x, y);
 
 
 		// Expose pupil position

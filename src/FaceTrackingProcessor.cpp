@@ -414,7 +414,7 @@ void FaceTrackingProcessor::Process(HWND dialogWindow) {
 									eye_point_angle_vertical = trackedFace->QueryGaze()->QueryGazeVerticalAngle();
 									eye_point_angle_horizontal = trackedFace->QueryGaze()->QueryGazeHorizontalAngle();
 									//optimize x,y points based on angle values
-									//	-find distance from screen and calculate absolute distance from gaze origin (normal from eyes to screen)
+									//	-find distance from screen and calculate absolute distance from gaze origin (from eyes to screen)
 									//  -compare that to the x and y points 
 									//	-increment/average  x|y accordingly to accomodate for discrepencies 
 
