@@ -7,6 +7,10 @@
 #define THRESHOLD 10
 #define INC_AMT 20
 
+static int screen_height = 1440;
+static int screen_width = 2180;
+static int max_angle = 60; //play around w/ these guys
+static int min_angle = -60;
 
 extern volatile bool need_calibration;
 
@@ -310,9 +314,16 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 			SetCursorPos(lpPoint.x + incX, lpPoint.y - incY);
 		}
 		
+		double x_position, y_position;
+
+		x_position = (eye_point_angle_horizontal + 30) * (2160 - 0) / (30 + 30) + 0;
+		y_position = (eye_point_angle_vertical + 30) * (1440 - 0) / (30 + 30) + 0;
+
+
+
 		//int x = (((eye_point_angle_horizontal + 60)*(2160 - 0)) / (60 + 60)) + 0;
 		//int y = (((eye_point_angle_vertical + 60)*(1440 - 0)) / (60 + 60)) + 0;
-		//SetCursorPos(x, y);
+		SetCursorPos(x_position, y_position);
 
 
 		// Expose pupil position
