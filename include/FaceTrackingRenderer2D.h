@@ -8,7 +8,7 @@ public:
 	FaceTrackingRenderer2D(HWND window);
 	virtual ~FaceTrackingRenderer2D();
 
-	void DrawBitmap(PXCCapture::Sample* sample);
+	void DrawBitmap(PXCCapture::Sample* sample); 
 
 private:
 	void DrawGraphics(PXCFaceData* faceOutput);

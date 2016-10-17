@@ -1,6 +1,7 @@
 #include "FaceTrackingRenderer2D.h"
 #include "FaceTrackingUtilities.h"
 #include "pxccapture.h"
+#include "global.h"
 
 #pragma once
 
@@ -203,6 +204,7 @@ void FaceTrackingRenderer2D::DrawExpressions(PXCFaceData::Face* trackedFace, con
 void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, const int faceId)
 {
 	const PXCFaceData::PoseData* poseData = trackedFace->QueryPose();
+	globalTrackedFace = trackedFace;
 	pxcBool poseAnglesExist;
 	PXCFaceData::PoseEulerAngles angles;
 

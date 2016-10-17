@@ -28,6 +28,7 @@ Copyright(c) 2012-2013 Intel Corporation. All Rights Reserved.
 #include "FaceTrackingProcessor.h"
 #include "Strsafe.h"
 #include <string.h>
+#include "global.h"
 
 
 
@@ -339,6 +340,8 @@ void UpdateTracking() {
 
 			//SetCursorPos(eye_point_x - width / 2, eye_point_y - height / 2);
 			SetWindowPos(ghWndEyePoint, NULL, eye_point_x - width / 2, eye_point_y - height / 2, width, height, NULL);
+
+			PXCFaceData::Face* trackedFace = globalTrackedFace;
 
 			// Calculate cursor position vs gaze estimation error
 			POINT cursorPos;
