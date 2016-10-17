@@ -253,11 +253,16 @@ void FaceTrackingProcessor::Process(HWND dialogWindow) {
         config->detection.isEnabled = FaceTrackingUtilities::IsModuleSelected(dialogWindow, IDC_LOCATION);
         config->landmarks.isEnabled = FaceTrackingUtilities::IsModuleSelected(dialogWindow, IDC_LANDMARK);
         config->pose.isEnabled = FaceTrackingUtilities::IsModuleSelected(dialogWindow, IDC_POSE);
-			
+					
         config->EnableAllAlerts();
         config->SubscribeAlert(&alertHandler);
 
-        config->ApplyChanges();
+        
+
+		config->QueryExpressions()->Enable();
+		config->QueryExpressions()->EnableAllExpressions();
+
+		config->ApplyChanges();
 
     }
 

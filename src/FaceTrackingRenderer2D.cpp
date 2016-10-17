@@ -15,6 +15,8 @@ static int min_angle = -60;
 
 extern volatile bool need_calibration;
 
+int globalIntensity;
+
 FaceTrackingRenderer2D::~FaceTrackingRenderer2D()
 {
 }
@@ -39,6 +41,8 @@ void FaceTrackingRenderer2D::DrawGraphics(PXCFaceData* faceOutput)
 			DrawLandmark(trackedFace);
 		if (FaceTrackingUtilities::IsModuleSelected(m_window, IDC_POSE))
 			DrawPoseAndPulse(trackedFace, i);
+		//if (FaceTrackingUtilities::IsModuleSelected(m_window, IDC_EXPRESSIONS) && trackedFace->QueryExpressions() != NULL)
+			DrawExpressions(trackedFace, i);
 	}
 }
 
@@ -189,6 +193,12 @@ void FaceTrackingRenderer2D::DrawExpressions(PXCFaceData::Face* trackedFace, con
 		if (expressionsData->QueryExpression(expressionIter->first, &expressionResult))
 		{
 			int intensity = expressionResult.intensity;
+
+			if (expressionIter->first == PXCFaceData::ExpressionsData::EXPRESSION_EYES_CLOSED_LEFT) {
+				globalIntensity = expressionResult.intensity;
+			}
+			//PXCFaceData::ExpressionsData::EXPRESSION_EYES_CLOSED_RIGHT
+
 			std::wstring expressionName = expressionIter->second;
 			swprintf_s<sizeof(tempLine) / sizeof(WCHAR)> (tempLine, L"%s = %d", expressionName.c_str(), intensity);
 			TextOut(dc2, xStartingPosition, yPosition, tempLine, std::char_traits<wchar_t>::length(tempLine));
@@ -330,6 +340,8 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 
 		// Expose pupil position
 		POINT pupilPt = ExposePupil(trackedFace);
+
+
 
 	} else {
 		SetTextColor(dc2, RGB(255, 0, 0));	
