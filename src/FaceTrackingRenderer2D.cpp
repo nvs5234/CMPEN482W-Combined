@@ -339,7 +339,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 
 
 		// Expose pupil position
-		POINT pupilPt = ExposePupil(trackedFace);
+	/*	POINT pupilPt = ExposePupil(trackedFace);
 
 		if(globalIntensity > 70) {
 		INPUT    Input = { 0 };													// Create our input.
@@ -353,7 +353,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		Input.mi.dwFlags = MOUSEEVENTF_LEFTUP;								// We are setting left mouse button up.
 		SendInput(1, &Input, sizeof(INPUT));
 		}
-
+		*/
 	} else {
 		SetTextColor(dc2, RGB(255, 0, 0));	
 	}
