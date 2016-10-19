@@ -1,7 +1,6 @@
 #include "FaceTrackingRenderer2D.h"
 #include "FaceTrackingUtilities.h"
 #include "pxccapture.h"
-#include "global.h"
 
 #pragma once
 
@@ -42,7 +41,7 @@ void FaceTrackingRenderer2D::DrawGraphics(PXCFaceData* faceOutput)
 		if (FaceTrackingUtilities::IsModuleSelected(m_window, IDC_POSE))
 			DrawPoseAndPulse(trackedFace, i);
 		//if (FaceTrackingUtilities::IsModuleSelected(m_window, IDC_EXPRESSIONS) && trackedFace->QueryExpressions() != NULL)
-			DrawExpressions(trackedFace, i);
+			//DrawExpressions(trackedFace, i);
 	}
 }
 
@@ -193,11 +192,12 @@ void FaceTrackingRenderer2D::DrawExpressions(PXCFaceData::Face* trackedFace, con
 		if (expressionsData->QueryExpression(expressionIter->first, &expressionResult))
 		{
 			int intensity = expressionResult.intensity;
-
+			/*
 			if (expressionIter->first == PXCFaceData::ExpressionsData::EXPRESSION_EYES_CLOSED_LEFT) {
 				globalIntensity = expressionResult.intensity;
 			}
 			//PXCFaceData::ExpressionsData::EXPRESSION_EYES_CLOSED_RIGHT
+			*/
 
 			std::wstring expressionName = expressionIter->second;
 			swprintf_s<sizeof(tempLine) / sizeof(WCHAR)> (tempLine, L"%s = %d", expressionName.c_str(), intensity);
@@ -214,7 +214,6 @@ void FaceTrackingRenderer2D::DrawExpressions(PXCFaceData::Face* trackedFace, con
 void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, const int faceId)
 {
 	const PXCFaceData::PoseData* poseData = trackedFace->QueryPose();
-	globalTrackedFace = trackedFace;
 	pxcBool poseAnglesExist;
 	PXCFaceData::PoseEulerAngles angles;
 
@@ -251,7 +250,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 	const int rowMargin = FaceTrackingUtilities::TextHeight;
 	const int yStartingPosition = 20 + faceId % maxColumnDisplayedFaces * 6 * FaceTrackingUtilities::TextHeight; 
 	const int xStartingPosition = bitmap.bmWidth - 100 - widthColumnMargin * (faceId / maxColumnDisplayedFaces);
-
+	
 	WCHAR tempLine[64];
 	int yPosition = yStartingPosition;
 	swprintf_s<sizeof(tempLine) / sizeof(pxcCHAR)> (tempLine, L"ID: %d", trackedFace->QueryUserID());
@@ -295,37 +294,52 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		swprintf_s<sizeof(tempLine) / sizeof(WCHAR) >(tempLine, L"HoriAngle: %llf", eye_point_angle_horizontal);
 		TextOut(dc2, xStartingPosition, yPosition, tempLine, std::char_traits<wchar_t>::length(tempLine));
 
-		//Move Cursor
+		// HEAD TRACKING - Move Cursor
 		POINT lpPoint;
 		GetCursorPos(&lpPoint);
 
 		int incX = angles.yaw, incY = angles.pitch;
-		if (abs(incX) > THRESHOLD || abs(incY) > THRESHOLD) {
-			if (abs(incX) < THRESHOLD) {
-				incX = 0;
-			}
-			else {
-				if (incX <= 0) {
-					incX += THRESHOLD;
+		if (eye_point_angle_horizontal <= 30 && eye_point_angle_horizontal >= -30 && eye_point_angle_vertical <= 30 && eye_point_angle_vertical  >= -30) {
+			if (abs(incX) > THRESHOLD || abs(incY) > THRESHOLD) {
+				if (abs(incX) < THRESHOLD) {
+					incX = 0;
 				}
 				else {
-					incX -= THRESHOLD;
+					if (incX <= 0) {
+						incX += THRESHOLD;
+					}
+					else {
+						incX -= THRESHOLD;
+					}
 				}
-			}
-			if (abs(incY) < THRESHOLD) {
-				incY = 0;
-			}
-			else {
-				if (incY <= 0) {
-					incY += THRESHOLD;
+				if (abs(incY) < THRESHOLD) {
+					incY = 0;
 				}
 				else {
-					incY -= THRESHOLD;
+					if (incY <= 0) {
+						incY += THRESHOLD;
+					}
+					else {
+						incY -= THRESHOLD;
+					}
 				}
+				SetCursorPos(lpPoint.x + incX, lpPoint.y - incY);
 			}
-			SetCursorPos(lpPoint.x + incX, lpPoint.y - incY);
+		} else {
+			SetCursorPos(eye_point_x, eye_point_y);
 		}
+
+		// EYE TRACKING - Move cursor
+		/*RECT rc;
+		GetWindowRect(ghWndEyePoint, &rc);
+
+		int width = rc.right - rc.left;
+		int height = rc.bottom - rc.top;
+		SetCursorPos(eye_point_x - width / 2, eye_point_y - height / 2);*/
+
 		
+
+		// EYE Angles
 		double x_position, y_position;
 
 		x_position = (eye_point_angle_horizontal + 30) * (2160 - 0) / (30 + 30) + 0;
@@ -335,7 +349,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 
 		//int x = (((eye_point_angle_horizontal + 60)*(2160 - 0)) / (60 + 60)) + 0;
 		//int y = (((eye_point_angle_vertical + 60)*(1440 - 0)) / (60 + 60)) + 0;
-		SetCursorPos(x_position, y_position);
+		//SetCursorPos(x_position, y_position);
 
 
 		// Expose pupil position

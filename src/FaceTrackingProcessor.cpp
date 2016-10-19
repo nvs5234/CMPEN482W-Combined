@@ -266,8 +266,8 @@ void FaceTrackingProcessor::Process(HWND dialogWindow) {
 
         
 
-		config->QueryExpressions()->Enable();
-		config->QueryExpressions()->EnableAllExpressions();
+		//config->QueryExpressions()->Enable();
+		//config->QueryExpressions()->EnableAllExpressions();
 
 		config->ApplyChanges();
 
