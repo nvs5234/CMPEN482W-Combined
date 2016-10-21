@@ -7,6 +7,11 @@
 #define THRESHOLD 10
 #define INC_AMT 20
 
+static int xAvg[5] = { 0 };
+static int yAvg[5] = { 0 };
+static int avgIdx = 0;
+static bool eyeMode = false;
+
 static int screen_height = 1440;
 static int screen_width = 2180;
 static int max_angle = 60; //play around w/ these guys
@@ -294,12 +299,39 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		swprintf_s<sizeof(tempLine) / sizeof(WCHAR) >(tempLine, L"HoriAngle: %llf", eye_point_angle_horizontal);
 		TextOut(dc2, xStartingPosition, yPosition, tempLine, std::char_traits<wchar_t>::length(tempLine));
 
+		// Choose mode: (eye vs head)
+		xAvg[avgIdx] = eye_point_x;
+		yAvg[avgIdx] = eye_point_y;
+
+		int avgX = 0, avgY = 0;
+		for (int i = 0; i < 5; ++i) {
+			avgX += xAvg[i];
+			avgY += yAvg[i];
+		}
+		avgX /= 5;
+		avgY /= 5;
+
+		POINT avgPoints;
+		avgPoints.x = avgX;
+		avgPoints.y = avgY;
+		int dx = abs(avgPoints.x - eye_point_x);
+		int dy = abs(avgPoints.y - eye_point_y);
+		double distance = sqrt(dx*dx + dy*dy);
+
+		if (distance >= 10) {
+			eyeMode = true;
+		}
+		else {
+			eyeMode = false;
+		}
+
+
 		// HEAD TRACKING - Move Cursor
 		POINT lpPoint;
 		GetCursorPos(&lpPoint);
 
 		int incX = angles.yaw, incY = angles.pitch;
-		if (eye_point_angle_horizontal <= 30 && eye_point_angle_horizontal >= -30 && eye_point_angle_vertical <= 30 && eye_point_angle_vertical  >= -30) {
+		if (!eyeMode) {
 			if (abs(incX) > THRESHOLD || abs(incY) > THRESHOLD) {
 				if (abs(incX) < THRESHOLD) {
 					incX = 0;
