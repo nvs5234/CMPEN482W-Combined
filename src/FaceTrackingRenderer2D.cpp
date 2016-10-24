@@ -10,6 +10,9 @@
 
 static int xAvg[AVG_CT] = { 0 };
 static int yAvg[AVG_CT] = { 0 };
+static int yawAvg[AVG_CT] = { 0 };
+static int pitchAvg[AVG_CT] = { 0 };
+static int rollAvg[AVG_CT] = { 0 };
 static int avgIdx;
 static bool eyeMode = false;
 
@@ -301,6 +304,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		TextOut(dc2, xStartingPosition, yPosition, tempLine, std::char_traits<wchar_t>::length(tempLine));
 
 		// Choose mode: (eye vs head)
+		// ------------------ Track average eye points ------------------ //
 		xAvg[avgIdx] = eye_point_x;
 		yAvg[avgIdx] = eye_point_y;
 
@@ -312,17 +316,38 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		avgX /= AVG_CT;
 		avgY /= AVG_CT;
 
+		
+		int dx = abs(avgX - eye_point_x);
+		int dy = abs(avgY - eye_point_y);
+		double eyeDistance = sqrt(dx*dx + dy*dy);
+
+		// ------------------ Track average head pose ------------------ //
+		yawAvg[avgIdx] = angles.yaw;
+		pitchAvg[avgIdx] = angles.pitch;
+		rollAvg[avgIdx] = angles.roll;
+
+		double avgYaw = 0, avgPitch = 0, avgRoll = 0;
+		for (int i = 0; i < AVG_CT; ++i) {
+			avgYaw += yawAvg[i];
+			avgPitch += pitchAvg[i];
+			avgRoll += rollAvg[i];
+		}
+		avgYaw /= AVG_CT;
+		avgPitch /= AVG_CT;
+		avgRoll /= AVG_CT;
+
+		double dYaw = abs(avgYaw - angles.yaw);
+		double dPitch = abs(avgPitch - angles.pitch);
+		double dRoll = abs(avgRoll - angles.roll);
+		double headDistance = sqrt(dYaw*dYaw + dPitch*dPitch + dRoll*dRoll);
+		
+
+		// ------------------------------------------------------------- //
 		if (avgIdx == AVG_CT) {
 			avgIdx = -1;
 		}
 		avgIdx++;
 
-		POINT avgPoints;
-		avgPoints.x = avgX;
-		avgPoints.y = avgY;
-		int dx = abs(avgPoints.x - eye_point_x);
-		int dy = abs(avgPoints.y - eye_point_y);
-		double distance = sqrt(dx*dx + dy*dy);
 
 		// Temporarily present for debugging //
 		char str[256];
@@ -330,10 +355,10 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		OutputDebugStringA(str);
 		sprintf_s(str, "cur eye pt: (%d,%d)\n", eye_point_x, eye_point_y);
 		OutputDebugStringA(str);
-		sprintf_s(str, "avg->cur dist: %d\n", distance);
+		sprintf_s(str, "avg->cur dist: %d\n", eyeDistance);
 		///////////////////////////////////////
 
-		if (distance >= 200) {
+		if (eyeDistance >= 150) {
 			eyeMode = true;
 		}
 		else {
