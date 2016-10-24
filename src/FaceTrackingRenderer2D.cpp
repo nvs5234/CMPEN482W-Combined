@@ -6,10 +6,11 @@
 
 #define THRESHOLD 10
 #define INC_AMT 20
+#define AVG_CT 30
 
-static int xAvg[5] = { 0 };
-static int yAvg[5] = { 0 };
-static int avgIdx = 0;
+static int xAvg[AVG_CT] = { 0 };
+static int yAvg[AVG_CT] = { 0 };
+static int avgIdx;
 static bool eyeMode = false;
 
 static int screen_height = 1440;
@@ -304,12 +305,17 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		yAvg[avgIdx] = eye_point_y;
 
 		int avgX = 0, avgY = 0;
-		for (int i = 0; i < 5; ++i) {
+		for (int i = 0; i < AVG_CT; ++i) {
 			avgX += xAvg[i];
 			avgY += yAvg[i];
 		}
-		avgX /= 5;
-		avgY /= 5;
+		avgX /= AVG_CT;
+		avgY /= AVG_CT;
+
+		if (avgIdx == AVG_CT) {
+			avgIdx = -1;
+		}
+		avgIdx++;
 
 		POINT avgPoints;
 		avgPoints.x = avgX;
@@ -318,7 +324,16 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		int dy = abs(avgPoints.y - eye_point_y);
 		double distance = sqrt(dx*dx + dy*dy);
 
-		if (distance >= 10) {
+		// Temporarily present for debugging //
+		char str[256];
+		sprintf_s(str, "avg pt: (%d,%d)\n", avgX, avgY);
+		OutputDebugStringA(str);
+		sprintf_s(str, "cur eye pt: (%d,%d)\n", eye_point_x, eye_point_y);
+		OutputDebugStringA(str);
+		sprintf_s(str, "avg->cur dist: %d\n", distance);
+		///////////////////////////////////////
+
+		if (distance >= 200) {
 			eyeMode = true;
 		}
 		else {
