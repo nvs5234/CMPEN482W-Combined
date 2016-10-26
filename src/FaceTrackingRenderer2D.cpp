@@ -50,7 +50,7 @@ void FaceTrackingRenderer2D::DrawGraphics(PXCFaceData* faceOutput)
 		if (FaceTrackingUtilities::IsModuleSelected(m_window, IDC_POSE))
 			DrawPoseAndPulse(trackedFace, i);
 		//if (FaceTrackingUtilities::IsModuleSelected(m_window, IDC_EXPRESSIONS) && trackedFace->QueryExpressions() != NULL)
-			//DrawExpressions(trackedFace, i);
+			DrawExpressions(trackedFace, i);
 	}
 }
 
@@ -201,12 +201,12 @@ void FaceTrackingRenderer2D::DrawExpressions(PXCFaceData::Face* trackedFace, con
 		if (expressionsData->QueryExpression(expressionIter->first, &expressionResult))
 		{
 			int intensity = expressionResult.intensity;
-			/*
-			if (expressionIter->first == PXCFaceData::ExpressionsData::EXPRESSION_EYES_CLOSED_LEFT) {
+			
+			if (expressionIter->first == PXCFaceData::ExpressionsData::EXPRESSION_MOUTH_OPEN) {
 				globalIntensity = expressionResult.intensity;
 			}
 			//PXCFaceData::ExpressionsData::EXPRESSION_EYES_CLOSED_RIGHT
-			*/
+			
 
 			std::wstring expressionName = expressionIter->second;
 			swprintf_s<sizeof(tempLine) / sizeof(WCHAR)> (tempLine, L"%s = %d", expressionName.c_str(), intensity);
@@ -302,7 +302,8 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		yPosition += rowMargin;
 		swprintf_s<sizeof(tempLine) / sizeof(WCHAR) >(tempLine, L"HoriAngle: %llf", eye_point_angle_horizontal);
 		TextOut(dc2, xStartingPosition, yPosition, tempLine, std::char_traits<wchar_t>::length(tempLine));
-
+		
+		
 		// Choose mode: (eye vs head)
 		// ------------------ Track average eye points ------------------ //
 		xAvg[avgIdx] = eye_point_x;
@@ -365,7 +366,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 			eyeMode = false;
 		}
 
-
+		
 		// HEAD TRACKING - Move Cursor
 		POINT lpPoint;
 		GetCursorPos(&lpPoint);
@@ -411,35 +412,40 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 
 		
 
-		// EYE Angles
-		double x_position, y_position;
+		// ----------------------- Eye angle code ---------------------- //
+		/*double x_position, y_position;
 
 		x_position = (eye_point_angle_horizontal + 30) * (2160 - 0) / (30 + 30) + 0;
 		y_position = (eye_point_angle_vertical + 30) * (1440 - 0) / (30 + 30) + 0;
 
 
 
-		//int x = (((eye_point_angle_horizontal + 60)*(2160 - 0)) / (60 + 60)) + 0;
-		//int y = (((eye_point_angle_vertical + 60)*(1440 - 0)) / (60 + 60)) + 0;
-		//SetCursorPos(x_position, y_position);
-
-
-		// Expose pupil position
-	/*	POINT pupilPt = ExposePupil(trackedFace);
-
-		if(globalIntensity > 70) {
-		INPUT    Input = { 0 };													// Create our input.
-
-		Input.type = INPUT_MOUSE;									// Let input know we are using the mouse.
-		Input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;							// We are setting left mouse button down.
-		SendInput(1, &Input, sizeof(INPUT));								// Send the input.
-
-		ZeroMemory(&Input, sizeof(INPUT));									// Fills a block of memory with zeros.
-		Input.type = INPUT_MOUSE;									// Let input know we are using the mouse.
-		Input.mi.dwFlags = MOUSEEVENTF_LEFTUP;								// We are setting left mouse button up.
-		SendInput(1, &Input, sizeof(INPUT));
-		}
+		int x = (((eye_point_angle_horizontal + 60)*(2160 - 0)) / (60 + 60)) + 0;
+		int y = (((eye_point_angle_vertical + 60)*(1440 - 0)) / (60 + 60)) + 0;
+		SetCursorPos(x_position, y_position);
 		*/
+		// ------------------------------------------------------------- //
+
+		// ----------------------- Expose pupil position -------------------------- //
+		// POINT pupilPt = ExposePupil(trackedFace);
+		// ------------------------------------------------------------------------ //
+
+
+		// ---------------------- Clicking ---------------------- //
+		if(globalIntensity > 20) {
+			INPUT    Input = { 0 };													// Create our input.
+
+			Input.type = INPUT_MOUSE;									// Let input know we are using the mouse.
+			Input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;							// We are setting left mouse button down.
+			SendInput(1, &Input, sizeof(INPUT));								// Send the input.
+
+			ZeroMemory(&Input, sizeof(INPUT));									// Fills a block of memory with zeros.
+			Input.type = INPUT_MOUSE;									// Let input know we are using the mouse.
+			Input.mi.dwFlags = MOUSEEVENTF_LEFTUP;								// We are setting left mouse button up.
+			SendInput(1, &Input, sizeof(INPUT));
+		}
+		// ------------------------------------------------------ //
+		
 	} else {
 		SetTextColor(dc2, RGB(255, 0, 0));	
 	}
