@@ -588,8 +588,19 @@ void FaceTrackingRenderer2D::DrawLandmark(PXCFaceData::Face* trackedFace)
 		int y = (int)m_landmarkPoints[i].image.y + LANDMARK_ALIGNMENT;		
 		if (m_landmarkPoints[i].confidenceImage)
 		{
-			SetTextColor(dc2, RGB(255, 255, 255));
-			TextOut(dc2, x, y, L"•", 1);
+			//output landmarks around eyes all green
+			if ((i >= 10 && i <= 17) || (i >= 18 && i <= 25)){
+				SetTextColor(dc2, RGB(0, 255, 0));
+				TextOut(dc2,x,y, L"+++", 1);
+			}
+			// point #77 is the right eye, point #76 is the left eye
+			else if (i == 77 || i == 76) {
+				SetTextColor(dc2,RGB(0,0,255));
+				TextOut(dc2, x, y, L"+++", 1);
+			}else {
+				SetTextColor(dc2, RGB(255, 255, 255));
+				TextOut(dc2, x, y, L"•", 1);
+			}
 		}
 		else
 		{
