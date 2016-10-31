@@ -2,6 +2,9 @@
 #include "FaceTrackingUtilities.h"
 #include "pxccapture.h"
 
+#define HEAD_THRESHOLD 100
+
+
 #pragma once
 
 #define THRESHOLD 10
@@ -14,7 +17,13 @@ static int yawAvg[AVG_CT] = { 0 };
 static int pitchAvg[AVG_CT] = { 0 };
 static int rollAvg[AVG_CT] = { 0 };
 static int avgIdx;
-static bool eyeMode = false;
+static bool eyeMode = true;
+
+
+static int headPointX;
+static int headPointY;
+static bool getFirstPoints = true;
+static bool gotFirstPoints = false;
 
 static int screen_height = 1440;
 static int screen_width = 2180;
@@ -32,6 +41,10 @@ FaceTrackingRenderer2D::~FaceTrackingRenderer2D()
 FaceTrackingRenderer2D::FaceTrackingRenderer2D(HWND window) : FaceTrackingRenderer(window)
 {
 }
+
+
+
+
 
 void FaceTrackingRenderer2D::DrawGraphics(PXCFaceData* faceOutput)
 {
@@ -359,17 +372,22 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		sprintf_s(str, "avg->cur dist: %d\n", eyeDistance);
 		///////////////////////////////////////
 
-		if (eyeDistance >= 150) {
-			eyeMode = true;
-		}
-		else {
-			eyeMode = false;
-		}
-
-		
 		// HEAD TRACKING - Move Cursor
 		POINT lpPoint;
 		GetCursorPos(&lpPoint);
+
+		if (gotFirstPoints && !eyeMode && (abs(lpPoint.x - headPointX) > HEAD_THRESHOLD || abs(lpPoint.y - headPointY) > HEAD_THRESHOLD)) {
+			eyeMode = true;
+
+		}
+		else if(eyeDistance<150){
+			eyeMode = false;
+			getFirstPoints = true;
+			gotFirstPoints = false;
+		}
+
+		
+
 
 		int incX = angles.yaw, incY = angles.pitch;
 		if (!eyeMode) {
@@ -397,9 +415,17 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 					}
 				}
 				SetCursorPos(lpPoint.x + incX, lpPoint.y - incY);
+
 			}
 		} else {
 			SetCursorPos(eye_point_x, eye_point_y);
+		}
+
+		if (!eyeMode && getFirstPoints) {
+			headPointX = lpPoint.x + incX;
+			headPointY = lpPoint.y - incY;
+			getFirstPoints = false;
+			gotFirstPoints = true;
 		}
 
 		// EYE TRACKING - Move cursor
