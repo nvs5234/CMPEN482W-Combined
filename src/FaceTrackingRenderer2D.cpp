@@ -17,7 +17,9 @@ static int yawAvg[AVG_CT] = { 0 };
 static int pitchAvg[AVG_CT] = { 0 };
 static int rollAvg[AVG_CT] = { 0 };
 static int avgIdx;
-static bool eyeMode = true;
+static bool eyeMode = false;
+static bool mouseIsDown = false;
+static int counter = 0;
 
 
 static int headPointX;
@@ -215,7 +217,7 @@ void FaceTrackingRenderer2D::DrawExpressions(PXCFaceData::Face* trackedFace, con
 		{
 			int intensity = expressionResult.intensity;
 			
-			if (expressionIter->first == PXCFaceData::ExpressionsData::EXPRESSION_MOUTH_OPEN) {
+			if (expressionIter->first == PXCFaceData::ExpressionsData::EXPRESSION_EYES_CLOSED_LEFT) {
 				globalIntensity = expressionResult.intensity;
 			}
 			//PXCFaceData::ExpressionsData::EXPRESSION_EYES_CLOSED_RIGHT
@@ -377,7 +379,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		GetCursorPos(&lpPoint);
 
 		if (gotFirstPoints && !eyeMode && (abs(lpPoint.x - headPointX) > HEAD_THRESHOLD || abs(lpPoint.y - headPointY) > HEAD_THRESHOLD)) {
-			eyeMode = true;
+			//eyeMode = true;
 
 		}
 		else if(eyeDistance<150){
@@ -418,7 +420,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 
 			}
 		} else {
-			SetCursorPos(eye_point_x, eye_point_y);
+			//SetCursorPos(eye_point_x, eye_point_y);
 		}
 
 		if (!eyeMode && getFirstPoints) {
@@ -455,20 +457,31 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		// ----------------------- Expose pupil position -------------------------- //
 		// POINT pupilPt = ExposePupil(trackedFace);
 		// ------------------------------------------------------------------------ //
+		if (mouseIsDown && globalIntensity > 90) {
+			counter++;
+		}
 
 
 		// ---------------------- Clicking ---------------------- //
-		if(globalIntensity > 20) {
+		if(globalIntensity > 90) {
 			INPUT    Input = { 0 };													// Create our input.
 
-			Input.type = INPUT_MOUSE;									// Let input know we are using the mouse.
-			Input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;							// We are setting left mouse button down.
-			SendInput(1, &Input, sizeof(INPUT));								// Send the input.
+			if(!mouseIsDown) {
 
-			ZeroMemory(&Input, sizeof(INPUT));									// Fills a block of memory with zeros.
-			Input.type = INPUT_MOUSE;									// Let input know we are using the mouse.
-			Input.mi.dwFlags = MOUSEEVENTF_LEFTUP;								// We are setting left mouse button up.
-			SendInput(1, &Input, sizeof(INPUT));
+				mouseIsDown = true;
+			}
+
+			if (mouseIsDown && counter == 200) {
+				Input.type = INPUT_MOUSE;									// Let input know we are using the mouse.
+				Input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;							// We are setting left mouse button down.
+				SendInput(1, &Input, sizeof(INPUT));								// Send the input.
+				ZeroMemory(&Input, sizeof(INPUT));									// Fills a block of memory with zeros.
+				Input.type = INPUT_MOUSE;									// Let input know we are using the mouse.
+				Input.mi.dwFlags = MOUSEEVENTF_LEFTUP;								// We are setting left mouse button up.
+				SendInput(1, &Input, sizeof(INPUT));
+				mouseIsDown = false;
+				counter = 0;
+			}
 		}
 		// ------------------------------------------------------ //
 		

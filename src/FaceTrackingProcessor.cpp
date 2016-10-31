@@ -265,10 +265,10 @@ void FaceTrackingProcessor::Process(HWND dialogWindow) {
         config->SubscribeAlert(&alertHandler);
 
         
-/*
+
 		config->QueryExpressions()->Enable();
 		config->QueryExpressions()->EnableAllExpressions();
-*/
+
 
 		config->ApplyChanges();
 
