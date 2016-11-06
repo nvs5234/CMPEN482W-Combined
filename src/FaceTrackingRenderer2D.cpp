@@ -379,7 +379,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		GetCursorPos(&lpPoint);
 
 		if (gotFirstPoints && !eyeMode && (abs(lpPoint.x - headPointX) > HEAD_THRESHOLD || abs(lpPoint.y - headPointY) > HEAD_THRESHOLD)) {
-			//eyeMode = true;
+			eyeMode = true;
 
 		}
 		else if(eyeDistance<150){
@@ -420,7 +420,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 
 			}
 		} else {
-			//SetCursorPos(eye_point_x, eye_point_y);
+			SetCursorPos(eye_point_x, eye_point_y);
 		}
 
 		if (!eyeMode && getFirstPoints) {
