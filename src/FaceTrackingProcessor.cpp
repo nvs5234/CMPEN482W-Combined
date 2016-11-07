@@ -39,9 +39,9 @@ short calibBuffersize = 0;
 int calib_status = 0; // PXCFaceData::GazeCalibData::CalibratoinStatus
 int dominant_eye = 0; // PXCFaceData::GazeCalibData::DominantEye
 
-int countNum = 0;
-int x_previous = 0;
-int y_previous = 0;
+//int countNum = 0;
+//int x_previous = 0;
+//int y_previous = 0;
 
 const int x_bound = 200;
 const int y_bound = 100;
@@ -436,20 +436,20 @@ void FaceTrackingProcessor::Process(HWND dialogWindow) {
 										eye_point_y = new_point.screenPoint.y;
 									//}
 
-										if (abs(eye_point_x - x_previous) < x_bound && abs(eye_point_y - y_previous) < y_bound) {
-											countNum++;
-										}
-										else {
-											countNum = 0;
-											x_previous = eye_point_x;
-											y_previous = eye_point_y;
-										}
-										if (countNum > 15) {
-											//test
-											char str[256];
-											sprintf_s(str,"Dwelling for %d \n", countNum);
-											OutputDebugStringA(str);
-										}
+										//if (abs(eye_point_x - x_previous) < x_bound && abs(eye_point_y - y_previous) < y_bound) {
+										//	countNum++;
+										//}
+										//else {
+										//	countNum = 0;
+										//	x_previous = eye_point_x;
+										//	y_previous = eye_point_y;
+										//}
+										//if (countNum > 15) {
+										//	//test
+										//	char str[256];
+										//	sprintf_s(str,"Dwelling for %d \n", countNum);
+										//	OutputDebugStringA(str);
+										//}
 									
 								}
 

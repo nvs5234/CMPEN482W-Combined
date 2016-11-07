@@ -2,8 +2,7 @@
 #include "FaceTrackingUtilities.h"
 #include "pxccapture.h"
 
-#define HEAD_THRESHOLD 100
-
+#define HEAD_THRESHOLD 150
 
 #pragma once
 
@@ -17,9 +16,14 @@ static int yawAvg[AVG_CT] = { 0 };
 static int pitchAvg[AVG_CT] = { 0 };
 static int rollAvg[AVG_CT] = { 0 };
 static int avgIdx;
-static bool eyeMode = false;
+static bool eyeMode = true;
+static bool ignoreEyes = false;
 static bool mouseIsDown = false;
 static int counter = 0;
+
+int dwellCount = 0;
+int x_previous = 0;
+int y_previous = 0;
 
 
 static int headPointX;
@@ -378,19 +382,42 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		POINT lpPoint;
 		GetCursorPos(&lpPoint);
 
-		if (gotFirstPoints && !eyeMode && (abs(lpPoint.x - headPointX) > HEAD_THRESHOLD || abs(lpPoint.y - headPointY) > HEAD_THRESHOLD)) {
-			eyeMode = true;
 
+		// ------------------------- Determine dwell time ------------------------- //
+		if (abs(eye_point_x - x_previous) < HEAD_THRESHOLD && abs(eye_point_y - y_previous) < HEAD_THRESHOLD) {
+			dwellCount++;
 		}
-		else if(eyeDistance<150){
-			eyeMode = false;
-			getFirstPoints = true;
-			gotFirstPoints = false;
+		else {
+			dwellCount = 0;
+			x_previous = eye_point_x;
+			y_previous = eye_point_y;
+		}
+		// ------------------------------------------------------------------------ //
+
+		// ----------------------- Determine head vs eye mode ----------------------- //
+		if (eyeDistance >= 75) {
+			if (!ignoreEyes) {
+				eyeMode = true;
+			}
+		}
+		else {
+			if (dwellCount > 50) {
+				eyeMode = false;
+				ignoreEyes = true;
+				headPointX = lpPoint.x;
+				headPointY = lpPoint.y;
+			}
 		}
 
-		
+		if (!eyeMode) {
+			if (abs(lpPoint.x - headPointX) > HEAD_THRESHOLD || abs(lpPoint.y - headPointY) > HEAD_THRESHOLD) {
+				eyeMode = true;
+				ignoreEyes = false;
+			}
+		}
+		// ------------------------------------------------------------------------- //
 
-
+		// ----------------------- Set cursor pos ----------------------- //
 		int incX = angles.yaw, incY = angles.pitch;
 		if (!eyeMode) {
 			if (abs(incX) > THRESHOLD || abs(incY) > THRESHOLD) {
@@ -422,13 +449,8 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		} else {
 			SetCursorPos(eye_point_x, eye_point_y);
 		}
+		// -------------------------------------------------------------- //
 
-		if (!eyeMode && getFirstPoints) {
-			headPointX = lpPoint.x + incX;
-			headPointY = lpPoint.y - incY;
-			getFirstPoints = false;
-			gotFirstPoints = true;
-		}
 
 		// EYE TRACKING - Move cursor
 		/*RECT rc;
