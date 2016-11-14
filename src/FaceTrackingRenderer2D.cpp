@@ -505,7 +505,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 				mouseIsDown = true;
 			}
 
-			if (mouseIsDown && counter == 75) {
+			if (mouseIsDown && counter == 35) {
 				Input.type = INPUT_MOUSE;									// Let input know we are using the mouse.
 				Input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;							// We are setting left mouse button down.
 				SendInput(1, &Input, sizeof(INPUT));								// Send the input.
