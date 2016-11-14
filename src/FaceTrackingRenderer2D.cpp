@@ -39,7 +39,10 @@ static int min_angle = -60;
 
 extern volatile bool need_calibration;
 
-int globalIntensity;
+int globalLeftEyeIntensity;
+int globalTongueOutIntensity;
+
+int tongueOutCounter = 0;
 
 FaceTrackingRenderer2D::~FaceTrackingRenderer2D()
 {
@@ -223,7 +226,10 @@ void FaceTrackingRenderer2D::DrawExpressions(PXCFaceData::Face* trackedFace, con
 			int intensity = expressionResult.intensity;
 			
 			if (expressionIter->first == PXCFaceData::ExpressionsData::EXPRESSION_EYES_CLOSED_LEFT) {
-				globalIntensity = expressionResult.intensity;
+				globalLeftEyeIntensity = expressionResult.intensity;
+			}
+			if (expressionIter->first == PXCFaceData::ExpressionsData::EXPRESSION_TONGUE_OUT) {
+				globalTongueOutIntensity = expressionResult.intensity;
 			}
 			//PXCFaceData::ExpressionsData::EXPRESSION_EYES_CLOSED_RIGHT
 			
@@ -403,6 +409,10 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 			x_previous = eye_point_x;
 			y_previous = eye_point_y;
 		}
+		// Determine tongue out count
+		if (globalTongueOutIntensity == 100) {
+			tongueOutCounter += 1;
+		}
 		// ------------------------------------------------------------------------ //
 
 
@@ -416,8 +426,9 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 			}
 		}
 		else {
-			if (abs(lpPoint.x - headPointX) > HEAD_THRESHOLD || abs(lpPoint.y - headPointY) > HEAD_THRESHOLD) {
+			if (abs(lpPoint.x - headPointX) > HEAD_THRESHOLD || abs(lpPoint.y - headPointY) > HEAD_THRESHOLD || tongueOutCounter > 25) {
 				eyeMode = true;
+				tongueOutCounter = 0;
 			}
 		}
 		// ------------------------------------------------------------------------- //
@@ -491,13 +502,13 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		// ----------------------- Expose pupil position -------------------------- //
 		// POINT pupilPt = ExposePupil(trackedFace);
 		// ------------------------------------------------------------------------ //
-		if (mouseIsDown && globalIntensity > 90) {
+		if (mouseIsDown && globalLeftEyeIntensity > 90) {
 			counter++;
 		}
 
 
 		// ---------------------- Clicking ---------------------- //
-		if(globalIntensity > 90) {
+		if(globalLeftEyeIntensity > 90) {
 			INPUT    Input = { 0 };													// Create our input.
 
 			if(!mouseIsDown) {
