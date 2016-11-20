@@ -3,39 +3,28 @@
 #include "pxccapture.h"
 
 #define HEAD_THRESHOLD 200
-
-
-#pragma once
-
-#define THRESHOLD 10
-#define INC_AMT 20
-#define AVG_CT 30
-
-static int xAvg[AVG_CT] = { 0 };
-static int yAvg[AVG_CT] = { 0 };
-static int yawAvg[AVG_CT] = { 0 };
-static int pitchAvg[AVG_CT] = { 0 };
-static int rollAvg[AVG_CT] = { 0 };
+#define MOUSE_INC_THRESHOLD 10
+#define NUM_OF_AVGS 30
 static int avgIdx;
-static bool eyeMode = true;
-static bool ignoreEyes = false;
+
+static int xAvg[NUM_OF_AVGS] = { 0 };
+static int yAvg[NUM_OF_AVGS] = { 0 };
+static int yawAvg[NUM_OF_AVGS] = { 0 };
+static int pitchAvg[NUM_OF_AVGS] = { 0 };
+static int rollAvg[NUM_OF_AVGS] = { 0 };
+static bool eyeMode = true;			// true -> in eye mode / false -> in head mode
 static bool mouseIsDown = false;
-static int counter = 0;
+static int mouseDownCounter = 0;
 
-int countNum = 0;
-int x_previous = 0;
-int y_previous = 0;
-
+static int dwellTime = 0;
+static int x_previous = 0;
+static int y_previous = 0;
 
 static int headPointX;
 static int headPointY;
-static bool getFirstPoints = true;
-static bool gotFirstPoints = false;
 
 static int screen_height = 1440;
 static int screen_width = 2180;
-static int max_angle = 60; //play around w/ these guys
-static int min_angle = -60;
 
 extern volatile bool need_calibration;
 
@@ -331,18 +320,20 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		TextOut(dc2, xStartingPosition, yPosition, tempLine, std::char_traits<wchar_t>::length(tempLine));
 
 
+// ------------------ PSU TEAM CODE CHANGES START HERE ------------------ //
+
 		// Choose mode: (eye vs head)
 		// ------------------ Track average eye points ------------------ //
 		xAvg[avgIdx] = eye_point_x;
 		yAvg[avgIdx] = eye_point_y;
 
 		int avgX = 0, avgY = 0;
-		for (int i = 0; i < AVG_CT; ++i) {
+		for (int i = 0; i < NUM_OF_AVGS; ++i) {
 			avgX += xAvg[i];
 			avgY += yAvg[i];
 		}
-		avgX /= AVG_CT;
-		avgY /= AVG_CT;
+		avgX /= NUM_OF_AVGS;
+		avgY /= NUM_OF_AVGS;
 
 
 		int dx = abs(avgX - eye_point_x);
@@ -355,14 +346,14 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		rollAvg[avgIdx] = angles.roll;
 
 		double avgYaw = 0, avgPitch = 0, avgRoll = 0;
-		for (int i = 0; i < AVG_CT; ++i) {
+		for (int i = 0; i < NUM_OF_AVGS; ++i) {
 			avgYaw += yawAvg[i];
 			avgPitch += pitchAvg[i];
 			avgRoll += rollAvg[i];
 		}
-		avgYaw /= AVG_CT;
-		avgPitch /= AVG_CT;
-		avgRoll /= AVG_CT;
+		avgYaw /= NUM_OF_AVGS;
+		avgPitch /= NUM_OF_AVGS;
+		avgRoll /= NUM_OF_AVGS;
 
 		double dYaw = abs(avgYaw - angles.yaw);
 		double dPitch = abs(avgPitch - angles.pitch);
@@ -370,8 +361,8 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		double headDistance = sqrt(dYaw*dYaw + dPitch*dPitch + dRoll*dRoll);
 
 
-		// ------------------------------------------------------------- //
-		if (avgIdx == AVG_CT) {
+		// ---------------------------- Update average index --------------------------------- //
+		if (avgIdx == NUM_OF_AVGS) {
 			avgIdx = -1;
 		}
 		avgIdx++;
@@ -386,27 +377,13 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		sprintf_s(str, "avg->cur dist: %d\n", eyeDistance);
 		///////////////////////////////////////
 
-		// HEAD TRACKING - Move Cursor
-		POINT lpPoint;
-		GetCursorPos(&lpPoint);
-
-		/*if (gotFirstPoints && !eyeMode && (abs(lpPoint.x - headPointX) > HEAD_THRESHOLD || abs(lpPoint.y - headPointY) > HEAD_THRESHOLD)) {
-		eyeMode = true;
-		gotFirstPoints = false;
-
-		}
-		else if(eyeDistance<150){
-		eyeMode = false;
-		getFirstPoints = true;
-		gotFirstPoints = false;
-		} */
 
 		// ------------------------- Determine dwell time ------------------------- //
 		if (abs(eye_point_x - x_previous) < HEAD_THRESHOLD && abs(eye_point_y - y_previous) < HEAD_THRESHOLD) {
-			countNum++;
+			dwellTime++;
 		}
 		else {
-			countNum = 0;
+			dwellTime = 0;
 			x_previous = eye_point_x;
 			y_previous = eye_point_y;
 		}
@@ -414,16 +391,18 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		if (globalTongueOutIntensity == 100) {
 			tongueOutCounter += 1;
 		}
-		// ------------------------------------------------------------------------ //
 
 
 		// ----------------------- Determine head vs eye mode ----------------------- //
+		POINT lpPoint;
+		GetCursorPos(&lpPoint);
+
 		if (eyeMode) {
-			if (eyeDistance <= 100 && countNum > 30) {
+			if (eyeDistance <= 100 && dwellTime > 30) {
 				eyeMode = false;
 				headPointX = lpPoint.x;
 				headPointY = lpPoint.y;
-				countNum = 0;
+				dwellTime = 0;
 			}
 		}
 		else {
@@ -432,32 +411,32 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 				tongueOutCounter = 0;
 			}
 		}
-		// ------------------------------------------------------------------------- //
+
 
 		// ----------------------- Set cursor pos ----------------------- //
 		int incX = angles.yaw, incY = angles.pitch;
 		if (!eyeMode) {
-			if (abs(incX) > THRESHOLD || abs(incY) > THRESHOLD) {
-				if (abs(incX) < THRESHOLD) {
+			if (abs(incX) > MOUSE_INC_THRESHOLD || abs(incY) > MOUSE_INC_THRESHOLD) {
+				if (abs(incX) < MOUSE_INC_THRESHOLD) {
 					incX = 0;
 				}
 				else {
 					if (incX <= 0) {
-						incX += THRESHOLD;
+						incX += MOUSE_INC_THRESHOLD;
 					}
 					else {
-						incX -= THRESHOLD;
+						incX -= MOUSE_INC_THRESHOLD;
 					}
 				}
-				if (abs(incY) < THRESHOLD) {
+				if (abs(incY) < MOUSE_INC_THRESHOLD) {
 					incY = 0;
 				}
 				else {
 					if (incY <= 0) {
-						incY += THRESHOLD;
+						incY += MOUSE_INC_THRESHOLD;
 					}
 					else {
-						incY -= THRESHOLD;
+						incY -= MOUSE_INC_THRESHOLD;
 					}
 				}
 				SetCursorPos(lpPoint.x + incX, lpPoint.y - incY);
@@ -467,24 +446,6 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		else {
 			SetCursorPos(eye_point_x, eye_point_y);
 		}
-		// -------------------------------------------------------------- //
-
-
-		/*if (!eyeMode && getFirstPoints) {
-		headPointX = lpPoint.x + incX;
-		headPointY = lpPoint.y - incY;
-		getFirstPoints = false;
-		gotFirstPoints = true;
-		}*/
-
-		// EYE TRACKING - Move cursor
-		/*RECT rc;
-		GetWindowRect(ghWndEyePoint, &rc);
-
-		int width = rc.right - rc.left;
-		int height = rc.bottom - rc.top;
-		SetCursorPos(eye_point_x - width / 2, eye_point_y - height / 2);*/
-
 
 
 		// ----------------------- Eye angle code ---------------------- //
@@ -501,15 +462,17 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		*/
 		// ------------------------------------------------------------- //
 
+
 		// ----------------------- Expose pupil position -------------------------- //
 		// POINT pupilPt = ExposePupil(trackedFace);
 		// ------------------------------------------------------------------------ //
-		if (mouseIsDown && globalLeftEyeIntensity > 90) {
-			counter++;
-		}
-
+		
 
 		// ---------------------- Clicking ---------------------- //
+		if (mouseIsDown && globalLeftEyeIntensity > 90) {
+			mouseDownCounter++;
+		}
+
 		if (globalLeftEyeIntensity > 90) {
 			INPUT    Input = { 0 };													// Create our input.
 
@@ -518,7 +481,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 				mouseIsDown = true;
 			}
 
-			if (mouseIsDown && counter == 35) {
+			if (mouseIsDown && mouseDownCounter == 35) {
 				Input.type = INPUT_MOUSE;									// Let input know we are using the mouse.
 				Input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;							// We are setting left mouse button down.
 				SendInput(1, &Input, sizeof(INPUT));								// Send the input.
@@ -527,7 +490,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 				Input.mi.dwFlags = MOUSEEVENTF_LEFTUP;								// We are setting left mouse button up.
 				SendInput(1, &Input, sizeof(INPUT));
 				mouseIsDown = false;
-				counter = 0;
+				mouseDownCounter = 0;
 			}
 		}
 		// ------------------------------------------------------ //
