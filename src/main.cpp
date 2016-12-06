@@ -341,7 +341,7 @@ void UpdateTracking() {
 			SetWindowPos(ghWndEyePoint, NULL, eye_point_x - width / 2, eye_point_y - height / 2, width, height, NULL);
 
 			// Calculate cursor position vs gaze estimation error
-			POINT cursorPos;
+			/*POINT cursorPos;
 			GetCursorPos(&cursorPos);
 			int dx = abs(cursorPos.x - eye_point_x);
 			int dy = abs(cursorPos.y - eye_point_y);
@@ -349,7 +349,7 @@ void UpdateTracking() {
 
 			char str[256];
 			sprintf_s(str, "error distance: %f\n", distance);
-			OutputDebugStringA(str);
+			OutputDebugStringA(str);*/
 		}
 
 	}

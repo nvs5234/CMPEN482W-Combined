@@ -426,30 +426,9 @@ void FaceTrackingProcessor::Process(HWND dialogWindow) {
 									PXCFaceData::GazePoint new_point = trackedFace->QueryGaze()->QueryGazePoint();
 									eye_point_angle_vertical = trackedFace->QueryGaze()->QueryGazeVerticalAngle();
 									eye_point_angle_horizontal = trackedFace->QueryGaze()->QueryGazeHorizontalAngle();
-									//optimize x,y points based on angle values
-									//	-find distance from screen and calculate absolute distance from gaze origin (from eyes to screen)
-									//  -compare that to the x and y points 
-									//	-increment/average  x|y accordingly to accomodate for discrepencies 
 
-									//if (new_point.confidence == 100) {
-										eye_point_x = new_point.screenPoint.x;
-										eye_point_y = new_point.screenPoint.y;
-									//}
-
-										//if (abs(eye_point_x - x_previous) < x_bound && abs(eye_point_y - y_previous) < y_bound) {
-										//	countNum++;
-										//}
-										//else {
-										//	countNum = 0;
-										//	x_previous = eye_point_x;
-										//	y_previous = eye_point_y;
-										//}
-										//if (countNum > 15) {
-										//	//test
-										//	char str[256];
-										//	sprintf_s(str,"Dwelling for %d \n", countNum);
-										//	OutputDebugStringA(str);
-										//}
+									eye_point_x = new_point.screenPoint.x;
+									eye_point_y = new_point.screenPoint.y;
 									
 								}
 

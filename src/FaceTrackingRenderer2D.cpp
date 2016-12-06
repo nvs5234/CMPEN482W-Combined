@@ -302,6 +302,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		swprintf_s<sizeof(tempLine) / sizeof(WCHAR) >(tempLine, L"Roll : %.0f ", angles.roll);
 		TextOut(dc2, xStartingPosition, yPosition, tempLine, std::char_traits<wchar_t>::length(tempLine));
 
+// ------------------ PSU TEAM CODE CHANGES START HERE ------------------ //
 		// print gaze point values
 
 		yPosition += rowMargin;
@@ -320,10 +321,6 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		swprintf_s<sizeof(tempLine) / sizeof(WCHAR) >(tempLine, L"HoriAngle: %llf", eye_point_angle_horizontal);
 		TextOut(dc2, xStartingPosition, yPosition, tempLine, std::char_traits<wchar_t>::length(tempLine));
 
-
-// ------------------ PSU TEAM CODE CHANGES START HERE ------------------ //
-
-		// Choose mode: (eye vs head)
 		// ------------------ Track average eye points ------------------ //
 		xAvg[avgIdx] = eye_point_x;
 		yAvg[avgIdx] = eye_point_y;
@@ -370,12 +367,12 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 
 
 		// Temporarily present for debugging //
-		char str[256];
+		/*char str[256];
 		sprintf_s(str, "avg pt: (%d,%d)\n", avgX, avgY);
 		OutputDebugStringA(str);
 		sprintf_s(str, "cur eye pt: (%d,%d)\n", eye_point_x, eye_point_y);
 		OutputDebugStringA(str);
-		sprintf_s(str, "avg->cur dist: %d\n", eyeDistance);
+		sprintf_s(str, "avg->cur dist: %d\n", eyeDistance);*/
 		///////////////////////////////////////
 
 
@@ -462,12 +459,10 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		int y = (((eye_point_angle_vertical + 60)*(1440 - 0)) / (60 + 60)) + 0;
 		SetCursorPos(x_position, y_position);
 		*/
-		// ------------------------------------------------------------- //
 
 
 		// ----------------------- Expose pupil position -------------------------- //
 		// POINT pupilPt = ExposePupil(trackedFace);
-		// ------------------------------------------------------------------------ //
 		
 
 		// ---------------------- Clicking ---------------------- //
@@ -495,7 +490,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 				mouseDownCounter = 0;
 			}
 		}
-		// ------------------------------------------------------ //
+// --------------------------- END OF PSU TEAM MAJOR CHANGES --------------------------- //
 
 	}
 	else {
