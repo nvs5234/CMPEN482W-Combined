@@ -2,26 +2,27 @@
 #include "FaceTrackingUtilities.h"
 #include "pxccapture.h"
 
-#define HEAD_THRESHOLD 200
-#define MOUSE_INC_THRESHOLD 10
-#define NUM_OF_AVGS 30
-static int avgIdx;
+#define EYE_GAZE_THRESHOLD 200			// higher threshold means system is more likely to switch from eye to head
+#define HEAD_THRESHOLD 200				// distance from starting head tracking point the mous is allowed to move before switching back to eye tracking
+#define MOUSE_INC_THRESHOLD 10			// head yaw or pitch must be greater than this value in order to move the mouse
+#define NUM_OF_AVGS 30					// number of previous values stored to keep track of average points
+static int avgIdx;						// circular counter that determines what index (of an average array) to store the most recent point in
 
-static int xAvg[NUM_OF_AVGS] = { 0 };
-static int yAvg[NUM_OF_AVGS] = { 0 };
-static int yawAvg[NUM_OF_AVGS] = { 0 };
-static int pitchAvg[NUM_OF_AVGS] = { 0 };
-static int rollAvg[NUM_OF_AVGS] = { 0 };
-static bool eyeMode = true;			// true -> in eye mode / false -> in head mode
-static bool mouseIsDown = false;
+static int xAvg[NUM_OF_AVGS] = { 0 };			// most recent points for eye gaze x
+static int yAvg[NUM_OF_AVGS] = { 0 };			// most recent points for eye gaze y
+static int yawAvg[NUM_OF_AVGS] = { 0 };			// most recent points for yaw
+static int pitchAvg[NUM_OF_AVGS] = { 0 };		// most recent points for pitch
+static int rollAvg[NUM_OF_AVGS] = { 0 };		// most recent points for roll
+static bool eyeMode = true;						// true -> in eye mode / false -> in head mode
+static bool mouseIsDown = false;				
 static int mouseDownCounter = 0;
 
 static int dwellTime = 0;
 static int x_previous = 0;
 static int y_previous = 0;
 
-static int headPointX;
-static int headPointY;
+static int headPointX;						// These values are the stored location of the cursor
+static int headPointY;						// when the system switches from eye to head tracking
 
 static int screen_height = 1440;
 static int screen_width = 2180;
@@ -379,7 +380,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 
 
 		// ------------------------- Determine dwell time ------------------------- //
-		if (abs(eye_point_x - x_previous) < HEAD_THRESHOLD && abs(eye_point_y - y_previous) < HEAD_THRESHOLD) {
+		if (abs(eye_point_x - x_previous) < EYE_GAZE_THRESHOLD && abs(eye_point_y - y_previous) < EYE_GAZE_THRESHOLD) {
 			dwellTime++;
 		}
 		else {
@@ -413,7 +414,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		}
 
 
-		// ----------------------- Set cursor pos ----------------------- //
+		// ----------------------- Set cursor location ----------------------- //
 		int incX = angles.yaw, incY = angles.pitch;
 		if (!eyeMode) {
 			if (abs(incX) > MOUSE_INC_THRESHOLD || abs(incY) > MOUSE_INC_THRESHOLD) {
@@ -439,12 +440,13 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 						incY -= MOUSE_INC_THRESHOLD;
 					}
 				}
-				SetCursorPos(lpPoint.x + incX, lpPoint.y - incY);
+
+				SetCursorPos(lpPoint.x + incX, lpPoint.y - incY);		// set cursor based on head tracking
 
 			}
 		}
 		else {
-			SetCursorPos(eye_point_x, eye_point_y);
+			SetCursorPos(eye_point_x, eye_point_y);						// set cursor based on eye tracking
 		}
 
 
