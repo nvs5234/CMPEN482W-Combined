@@ -2,7 +2,7 @@
 #include "FaceTrackingUtilities.h"
 #include "pxccapture.h"
 
-#define EYE_GAZE_THRESHOLD 200			// higher threshold means system is more likely to switch from eye to head
+#define EYE_GAZE_THRESHOLD 100			// higher threshold means system is more likely to switch from eye to head
 #define HEAD_THRESHOLD 200				// distance from starting head tracking point the mous is allowed to move before switching back to eye tracking
 #define MOUSE_INC_THRESHOLD 10			// head yaw or pitch must be greater than this value in order to move the mouse
 #define NUM_OF_AVGS 30					// number of previous values stored to keep track of average points
@@ -339,7 +339,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		double eyeDistance = sqrt(dx*dx + dy*dy);
 
 		// ------------------ Track average head pose ------------------ //
-		yawAvg[avgIdx] = angles.yaw;
+		/*yawAvg[avgIdx] = angles.yaw;
 		pitchAvg[avgIdx] = angles.pitch;
 		rollAvg[avgIdx] = angles.roll;
 
@@ -356,7 +356,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		double dYaw = abs(avgYaw - angles.yaw);
 		double dPitch = abs(avgPitch - angles.pitch);
 		double dRoll = abs(avgRoll - angles.roll);
-		double headDistance = sqrt(dYaw*dYaw + dPitch*dPitch + dRoll*dRoll);
+		double headDistance = sqrt(dYaw*dYaw + dPitch*dPitch + dRoll*dRoll);*/
 
 
 		// ---------------------------- Update average index --------------------------------- //
@@ -386,7 +386,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 			y_previous = eye_point_y;
 		}
 		// Determine tongue out count
-		if (globalTongueOutIntensity == 100) {
+		if (globalTongueOutIntensity >= 90) {
 			tongueOutCounter += 1;
 		}
 
@@ -396,7 +396,7 @@ void FaceTrackingRenderer2D::DrawPoseAndPulse(PXCFaceData::Face* trackedFace, co
 		GetCursorPos(&lpPoint);
 
 		if (eyeMode) {
-			if (eyeDistance <= 100 && dwellTime > 30) {
+			if (eyeDistance <= EYE_GAZE_THRESHOLD && dwellTime > 30) {
 				eyeMode = false;
 				headPointX = lpPoint.x;
 				headPointY = lpPoint.y;
